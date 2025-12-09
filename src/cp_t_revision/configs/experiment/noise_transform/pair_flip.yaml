@@ -1,0 +1,3 @@
+_target_: cp_t_revision.noise_transforms.PairFlipNoise
+noise_level: 0.2
+seed: 1234

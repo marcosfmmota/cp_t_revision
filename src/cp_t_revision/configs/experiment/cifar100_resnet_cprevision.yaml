@@ -1,0 +1,39 @@
+defaults:
+  - dataset: cifar100
+  - model: resnet
+  - noise_transform: pair_flip
+n_runs: 5
+seed: 123
+cp_revision: true
+checkpoint_path: /home/ubuntu/cp_t_revision/lightning_logs/CIFAR100DataModule_ResNet/PairFlipNoise/0.5/version_4/checkpoints/epoch=199-step=250000.ckpt
+synthetic_noise: true
+n_classes: 100
+# overrides standard resnet18 configuration used for CIFAR10 dataset
+# to adapt for the CIFAR100 experiment
+model:
+  model:
+    n_classes: 100
+    resnet_type: resnet34
+  metric_collection:
+    metrics:
+    - _target_: torchmetrics.Accuracy
+      task: "multiclass"
+      num_classes: 100
+revision_loss:
+  _target_: cp_t_revision.losses.Reweighting_Revision_Loss
+second_step_optimizer_config:
+    optimizer: Adam
+    args:
+      lr: 5e-7
+trainer:
+  _target_: lightning.Trainer
+  max_epochs: 50
+  accelerator: "gpu"
+  devices: "auto"
+logger:
+  _target_: lightning.pytorch.loggers.CSVLogger
+  save_dir: "lightning_logs"
+alpha: 0.01
+k_points: 3
+cp_score: APS
+cp_predictor: SplitPredictor

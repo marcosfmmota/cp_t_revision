@@ -1,0 +1,20 @@
+_target_: cp_t_revision.models.ModelModule
+model:
+  _target_: cp_t_revision.models.ResNet
+  n_classes: 10
+  resnet_type: "resnet18"
+  weights: null
+loss:
+  _target_: torch.nn.CrossEntropyLoss
+metric_collection:
+  _target_: torchmetrics.MetricCollection
+  metrics:
+    - _target_: torchmetrics.Accuracy
+      task: "multiclass"
+      num_classes: 10
+optimizer_cfg:
+  optimizer: SGD
+  args:
+    lr: 0.001
+    momentum: 0.9
+    weight_decay: 0.0001

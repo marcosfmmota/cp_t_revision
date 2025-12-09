@@ -1,0 +1,25 @@
+defaults:
+  - dataset: cifar10
+  - model: resnet
+  - noise_transform: pair_flip
+n_runs: 5
+seed: 321
+synthetic_noise: true
+n_classes: 10
+trainer:
+  _target_: lightning.Trainer
+  max_epochs: 30
+  accelerator: "gpu"
+  devices: "auto"
+  deterministic: true
+  # callbacks:
+  # - _target_: lightning.pytorch.callbacks.early_stopping.EarlyStopping
+  #   monitor: val_MulticlassAccuracy
+  #   min_delta: 0.000
+  #   patience: 5
+  #   verbose: false
+  #   mode: max
+logger:
+  _target_: lightning.pytorch.loggers.CSVLogger
+  save_dir: "lightning_logs"
+  

@@ -1,0 +1,3 @@
+_target_: cp_t_revision.noise_transforms.SymmetricNoise
+noise_level: 0.5
+seed: 1234

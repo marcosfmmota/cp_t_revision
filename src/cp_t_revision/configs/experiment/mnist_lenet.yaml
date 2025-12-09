@@ -1,0 +1,17 @@
+defaults:
+  - dataset: mnist
+  - model: lenet
+  - noise_transform: pair_flip
+n_runs: 5
+seed: 123
+synthetic_noise: true
+n_classes: 10
+trainer:
+  _target_: lightning.Trainer
+  max_epochs: 200
+  accelerator: "gpu"
+  devices: "auto"
+  deterministic: true
+logger:
+  _target_: lightning.pytorch.loggers.CSVLogger
+  save_dir: "lightning_logs"

@@ -1,0 +1,5 @@
+_target_: cp_t_revision.data_modules.CIFARNDataModule
+noise_type: aggre_label
+noise_path: /home/ubuntu/cp_t_revision/src/cp_t_revision/cifar_n/CIFAR-10_human.pt
+data_dir: /home/ubuntu/cp_t_revision/src/cp_t_revision/cifar_n
+batch_size: 32

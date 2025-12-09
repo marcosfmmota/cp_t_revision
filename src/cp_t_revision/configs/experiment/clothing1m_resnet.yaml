@@ -1,0 +1,42 @@
+defaults:
+  - dataset: clothing1m
+  - model: resnet
+n_runs: 1
+seed: 321
+synthetic_noise: false
+n_classes: 14
+# overrides standard resnet18 configuration used for CIFAR10 dataset
+# to adapt for the CIFAR100 experiment
+model:
+  model:
+    n_classes: 14
+    resnet_type: resnet50
+    weights: DEFAULT
+  metric_collection:
+    metrics:
+    - _target_: torchmetrics.Accuracy
+      task: "multiclass"
+      num_classes: 14
+  optimizer_cfg:
+    optimizer: SGD
+    args:
+      lr: 0.00001
+      momentum: 0.9
+      weight_decay: 0.0001
+trainer:
+  _target_: lightning.Trainer
+  max_epochs: 10
+  accelerator: "gpu"
+  devices: "auto"
+  deterministic: true
+  # callbacks:
+  # - _target_: lightning.pytorch.callbacks.early_stopping.EarlyStopping
+  #   monitor: val_MulticlassAccuracy
+  #   min_delta: 0.000
+  #   patience: 5
+  #   verbose: false
+  #   mode: max
+logger:
+  _target_: lightning.pytorch.loggers.CSVLogger
+  save_dir: "lightning_logs"
+  

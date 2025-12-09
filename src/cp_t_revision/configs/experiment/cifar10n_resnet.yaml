@@ -1,0 +1,20 @@
+defaults:
+  - dataset: cifarn
+  - model: resnet
+  - noise_transform: pair_flip
+n_runs: 5
+seed: 321
+synthetic_noise: false
+cp_revision: false
+checkpoint_path: null
+n_classes: 10
+trainer:
+  _target_: lightning.Trainer
+  max_epochs: 200
+  accelerator: "gpu"
+  devices: "auto"
+  deterministic: true
+logger:
+  _target_: lightning.pytorch.loggers.CSVLogger
+  save_dir: "lightning_logs"
+  

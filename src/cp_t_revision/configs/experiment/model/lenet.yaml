@@ -1,0 +1,16 @@
+_target_: cp_t_revision.models.ModelModule
+model:
+  _target_: cp_t_revision.models.LeNet5
+  n_classes: 10
+loss:
+  _target_: torch.nn.CrossEntropyLoss
+metric_collection:
+  _target_: torchmetrics.MetricCollection
+  metrics:
+    - _target_: torchmetrics.Accuracy
+      task: "multiclass"
+      num_classes: 10
+optimizer_cfg:
+  optimizer: Adam
+  args:
+    lr: 0.01

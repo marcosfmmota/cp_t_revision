@@ -1,0 +1,28 @@
+defaults:
+  - dataset: cifar10
+  - model: resnet
+  - noise_transform: pair_flip
+n_runs: 1
+seed: 124
+cp_revision: true
+checkpoint_path: /home/ubuntu/cp_t_revision/lightning_logs/CIFAR10DataModule_ResNet/PairFlipNoise/0.2/version_3/checkpoints/epoch=199-step=250000.ckpt
+synthetic_noise: true
+n_classes: 10
+revision_loss:
+  _target_: cp_t_revision.losses.Reweighting_Revision_Loss
+second_step_optimizer_config:
+    optimizer: Adam
+    args:
+      lr: 5e-7
+trainer:
+  _target_: lightning.Trainer
+  max_epochs: 10
+  accelerator: "gpu"
+  devices: "auto"
+logger:
+  _target_: lightning.pytorch.loggers.CSVLogger
+  save_dir: "lightning_logs"
+alpha: 0.01
+k_points: 1
+cp_score: APS
+cp_predictor: SplitPredictor
