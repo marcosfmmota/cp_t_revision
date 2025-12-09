@@ -327,6 +327,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/03/9f/157e913626c1acfb3b19ce000b1a6e4e4fb177c0bc0ea0c67ca5bd714b5a/torch_geometric-2.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/15/64/9724d6c1caad4e1d580d752565dc3c901b052db959601abc70beae28fad8/torchcp-1.0.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b0/33/b6f2d7d5b2baa18dfc8b7b4323547ce959e8c7ef3d611361db856aac277f/torchshow-0.5.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/57/c8/f643cdde8bcfe2c9c2460ffeac83e2fecac9d5bb48fddaf61970547275aa/torchsort-0.1.10.tar.gz
       - pypi: https://files.pythonhosted.org/packages/fd/39/4702c2901899c018189b9aa7eb75aa8eb54527aed71c3f285895190dc664/typeshed_client-2.7.0-py3-none-any.whl
       - pypi: ./
   dev:
@@ -691,6 +692,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/03/9f/157e913626c1acfb3b19ce000b1a6e4e4fb177c0bc0ea0c67ca5bd714b5a/torch_geometric-2.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/15/64/9724d6c1caad4e1d580d752565dc3c901b052db959601abc70beae28fad8/torchcp-1.0.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b0/33/b6f2d7d5b2baa18dfc8b7b4323547ce959e8c7ef3d611361db856aac277f/torchshow-0.5.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/57/c8/f643cdde8bcfe2c9c2460ffeac83e2fecac9d5bb48fddaf61970547275aa/torchsort-0.1.10.tar.gz
       - pypi: https://files.pythonhosted.org/packages/fd/39/4702c2901899c018189b9aa7eb75aa8eb54527aed71c3f285895190dc664/typeshed_client-2.7.0-py3-none-any.whl
       - pypi: ./
 packages:
@@ -1335,12 +1337,13 @@ packages:
 - pypi: ./
   name: cp-t-revision
   version: 0.1.0
-  sha256: 19fca77b94533aba3a544466f1df87017750876093cce92b9457eb33487df854
+  sha256: d43a1702dc07806caab86d8c9268365999f0a590f950b177cfde2f20ed123132
   requires_dist:
   - jsonargparse[signatures]>=4.34.0,<5
   - torchcp>=1.0.2,<2
   - torch-geometric>=2.6.1,<3
   - torchshow>=0.5.2,<0.6
+  - torchsort>=0.1.10,<0.2
   requires_python: '>=3.11'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/cryptography-43.0.3-py312hda17c39_0.conda
@@ -5164,6 +5167,13 @@ packages:
   - numpy
   - matplotlib
   requires_python: '>=3.6'
+- pypi: https://files.pythonhosted.org/packages/57/c8/f643cdde8bcfe2c9c2460ffeac83e2fecac9d5bb48fddaf61970547275aa/torchsort-0.1.10.tar.gz
+  name: torchsort
+  version: 0.1.10
+  sha256: 416a7dd2ab88332b27e98318d7fb2e0243b9fb6f1fffcf77760d63103d70dd04
+  requires_dist:
+  - torch>=1.7.1
+  requires_python: '>=3.7'
 - conda: https://conda.anaconda.org/pytorch/linux-64/torchtriton-3.1.0-py312.tar.bz2
   build_number: 1
   sha256: f0beb429b3834a3796626642829a7e4bb9d4fe6477c8dc614a55e5c4f15a6a05
