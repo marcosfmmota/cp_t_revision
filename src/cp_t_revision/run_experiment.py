@@ -35,7 +35,7 @@ def run_experiment(cfg: DictConfig):
         experiment_name = f"{experiment_tags['dataset']}_{experiment_tags['model']}/"
         if exp_config["cp_revision"]:
             experiment_name = (
-                f"{experiment_tags['dataset']}_{experiment_tags['model']}_cp_revision/"
+                f"{experiment_tags['dataset']}_{experiment_tags['model']}_cp_revision/k_points_{exp_config['k_points']}/"
             )
             experiment_tags |= {
                 "cp_score": exp_config["cp_score"],
@@ -46,7 +46,7 @@ def run_experiment(cfg: DictConfig):
 
         # Ugly but necessary to maintain compatibility with previous directory structure of experiments
         if exp_config["synthetic_noise"]:
-            experiment_name += f"{experiment_tags['noise_type']}/{experiment_tags['noise_level']}/k_points_{exp_config['k_points']}"
+            experiment_name += f"{experiment_tags['noise_type']}/{experiment_tags['noise_level']}"
 
         mlflow.pytorch.autolog(extra_tags=experiment_tags)  # type: ignore
         logger = instantiate(exp_config["logger"], name=experiment_name)
