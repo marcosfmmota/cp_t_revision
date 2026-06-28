@@ -108,7 +108,8 @@ def run_experiment(cfg: DictConfig):
                 )
                 np.save("initial_transition_matrix.npy", transition_matrix.cpu().numpy())
                 mlflow.log_artifact("initial_transition_matrix.npy", artifact_path="transition_matrix")
-                transition_matrix.to("cuda")
+                device = next(model_module.parameters()).device
+                transition_matrix = transition_matrix.to(device)
                 revision_loss = instantiate(exp_config["revision_loss"], T=transition_matrix)
                 second_step_optimizer_config = exp_config.get("second_step_optimizer_config")
                 revision_model = RevisionModelModule(

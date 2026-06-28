@@ -24,7 +24,8 @@ class ReweightCorrectionLoss(nn.Module):
         super().__init__()
 
     def forward(self, out, T, correction, target):
-        T = T.to(device="cuda")
+        device = out.device
+        T = T.to(device)
         out_softmax = F.softmax(out, dim=1)
         T += correction
         noisy_prob = torch.matmul(T.T, out_softmax.unsqueeze(-1)).squeeze()
