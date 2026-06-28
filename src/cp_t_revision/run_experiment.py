@@ -1,12 +1,33 @@
 import hydra
 import mlflow
 import numpy as np
+import torch
 from hydra.utils import instantiate
 from lightning.pytorch import seed_everything
+from lightning.pytorch.callbacks import ModelCheckpoint
 from omegaconf import DictConfig
 
 from cp_t_revision.cp_revision import get_initial_transition_matrix
 from cp_t_revision.models import ModelModule, RevisionModelModule
+
+
+def _build_trainer(trainer_cfg, logger, monitor: str):
+    """Instantiate a Trainer with a fresh ModelCheckpoint so ``ckpt_path="best"`` resolves
+    to the monitored validation metric and callback state does not leak between stages.
+
+    A ModelCheckpoint is injected only when the config does not already declare callbacks,
+    so user-supplied callbacks take precedence and there is no ambiguous duplicate "best".
+    Passing ``callbacks`` as a kwarg would override any callbacks in the config, so when the
+    config already declares callbacks we let Hydra instantiate them as-is.
+    """
+    if trainer_cfg.get("callbacks"):
+        return instantiate(trainer_cfg, logger=logger, _convert_="all")
+    return instantiate(
+        trainer_cfg,
+        logger=logger,
+        callbacks=[ModelCheckpoint(monitor=monitor, mode="max", save_top_k=1)],
+        _convert_="all",
+    )
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
@@ -69,26 +90,35 @@ def run_experiment(cfg: DictConfig):
             mlflow.set_tag("run_index", str(run))
             mlflow.set_tag("seed", str(exp_config["seed"] + run))
 
-            logger = instantiate(exp_config["logger"], name=experiment_name)
-            trainer = instantiate(exp_config["trainer"], logger=logger, _convert_="all")
+            monitor = exp_config.get("checkpoint_monitor", "val_MulticlassAccuracy")
 
-            if exp_config["checkpoint_path"] is None:
-                model_module = ModelModule(model, loss, metrics, optimizer_cfg)
-                trainer.fit(model_module, datamodule)
-                trainer.test(model_module, datamodule, ckpt_path="best")
-            elif exp_config["checkpoint_path"] is not None and not exp_config["cp_revision"]:
-                model_module = ModelModule.load_from_checkpoint(
-                    exp_config["checkpoint_path"],
-                    model=model,
-                    loss=loss,
-                    metric_collection=metrics,
-                    optimizer_cfg=optimizer_cfg,
-                )
-                trainer.fit(model_module, datamodule)
-                trainer.test(model_module, datamodule, ckpt_path="best")
+            # Base stage: train from scratch (no checkpoint) or fine-tune from a checkpoint. It is
+            # skipped when a checkpoint is loaded purely to seed CP revision (no base trainer built).
+            checkpoint_path = exp_config["checkpoint_path"]
+            run_base = checkpoint_path is None or not exp_config["cp_revision"]
+
+            base_trainer = None
+            if run_base:
+                # The base logger is constructed and its fit run before the revision logger below,
+                # so the revision CSVLogger picks an incremented version rather than colliding.
+                base_logger = instantiate(exp_config["logger"], name=experiment_name)
+                base_trainer = _build_trainer(exp_config["trainer"], base_logger, monitor)
+                if checkpoint_path is None:
+                    model_module = ModelModule(model, loss, metrics, optimizer_cfg)
+                else:
+                    model_module = ModelModule.load_from_checkpoint(
+                        checkpoint_path,
+                        model=model,
+                        loss=loss,
+                        metric_collection=metrics,
+                        optimizer_cfg=optimizer_cfg,
+                    )
+                base_trainer.fit(model_module, datamodule)
+                base_trainer.test(model_module, datamodule, ckpt_path="best")
             else:
+                # Checkpoint loaded purely for CP revision: no base training.
                 model_module = ModelModule.load_from_checkpoint(
-                    exp_config["checkpoint_path"],
+                    checkpoint_path,
                     model=model,
                     loss=loss,
                     metric_collection=metrics,
@@ -96,6 +126,26 @@ def run_experiment(cfg: DictConfig):
                 )
 
             if exp_config["cp_revision"]:
+                # Seed revision from the best base checkpoint (when base training ran) so the
+                # transition matrix and revision init use the best-validation weights rather than
+                # the final-epoch weights left in memory after fit.
+                if base_trainer is not None and exp_config.get("revision_from_best_ckpt", True):
+                    best_path = getattr(base_trainer.checkpoint_callback, "best_model_path", "")
+                    if best_path:
+                        # weights_only=False because Lightning checkpoints also store OmegaConf
+                        # hyper_parameters; the file is trusted (written by our own trainer above).
+                        state = torch.load(best_path, map_location="cpu", weights_only=False)
+                        model_module.load_state_dict(state["state_dict"])
+
+                # Fresh logger + trainer for revision: independent max_epochs and clean callback
+                # state, so ckpt_path="best" resolves to this stage's own ModelCheckpoint.
+                revision_logger = instantiate(exp_config["logger"], name=experiment_name)
+                revision_trainer = _build_trainer(
+                    exp_config.get("revision_trainer", exp_config["trainer"]),
+                    revision_logger,
+                    monitor,
+                )
+
                 datamodule.setup(stage="fit")
                 calibration_set = datamodule.val_dataloader()
                 transition_matrix = get_initial_transition_matrix(
@@ -118,8 +168,8 @@ def run_experiment(cfg: DictConfig):
                     metrics,
                     second_step_optimizer_config,
                 )
-                trainer.fit(revision_model, datamodule)
-                trainer.test(revision_model, datamodule, ckpt_path="best")
+                revision_trainer.fit(revision_model, datamodule)
+                revision_trainer.test(revision_model, datamodule, ckpt_path="best")
                 np.save(
                     "final_transition_matrix.npy",
                     revision_model.T_matrix.cpu().numpy(),  # type: ignore

@@ -5,6 +5,8 @@ defaults:
 n_runs: 5
 seed: 321
 synthetic_noise: true
+cp_revision: null
+checkpoint_path: null
 n_classes: 100
 # overrides standard resnet18 configuration used for CIFAR10 dataset
 # to adapt for the CIFAR100 experiment

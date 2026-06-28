@@ -30,6 +30,13 @@ trainer:
   max_epochs: 50
   accelerator: "gpu"
   devices: "auto"
+# Trainer dedicated to the CP-revision stage so its max_epochs is tuned independently of the base
+# training above. Falls back to `trainer` if omitted (see run_experiment._build_trainer).
+revision_trainer:
+  _target_: lightning.Trainer
+  max_epochs: 30
+  accelerator: "gpu"
+  devices: "auto"
 logger:
   _target_: lightning.pytorch.loggers.CSVLogger
   save_dir: "lightning_logs"

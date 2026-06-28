@@ -2,10 +2,10 @@ defaults:
   - dataset: cifar10
   - model: resnet
   - noise_transform: pair_flip
-n_runs: 1
+n_runs: 5
 seed: 124
 cp_revision: true
-checkpoint_path: /home/ubuntu/cp_t_revision/lightning_logs/CIFAR10DataModule_ResNet/PairFlipNoise/0.2/version_3/checkpoints/epoch=199-step=250000.ckpt
+checkpoint_path: null
 synthetic_noise: true
 n_classes: 10
 revision_loss:
@@ -16,7 +16,14 @@ second_step_optimizer_config:
       lr: 5e-7
 trainer:
   _target_: lightning.Trainer
-  max_epochs: 10
+  max_epochs: 100
+  accelerator: "gpu"
+  devices: "auto"
+# Trainer dedicated to the CP-revision stage so its max_epochs is tuned independently of the base
+# training above. Falls back to `trainer` if omitted (see run_experiment._build_trainer).
+revision_trainer:
+  _target_: lightning.Trainer
+  max_epochs: 100
   accelerator: "gpu"
   devices: "auto"
 logger:
