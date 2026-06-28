@@ -175,8 +175,9 @@ data/
 outputs/
 multirun/
 
-# MLflow runs
+# MLflow files
 mlruns/
+mlartifacts/
 
 cifar-10-batches-py/
 *.tar.gz

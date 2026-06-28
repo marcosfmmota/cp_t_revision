@@ -1,2 +1,9 @@
 defaults:
   - experiment: mnist_lenet
+
+mlflow:
+  # Set to a tracking server URI (e.g. http://localhost:5001) to log there.
+  # null => honor the MLFLOW_TRACKING_URI env var if set, else use a local ./mlruns file store.
+  tracking_uri: null
+  # Disable autolog's automatic model logging to keep artifacts small and behavior predictable.
+  log_models: false
