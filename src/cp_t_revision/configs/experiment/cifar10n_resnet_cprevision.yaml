@@ -2,10 +2,10 @@ defaults:
   - dataset: cifarn
   - model: resnet
   - noise_transform: pair_flip
-n_runs: 1
+n_runs: 5
 seed: 123
 cp_revision: true
-checkpoint_path: /home/ubuntu/cp_t_revision/lightning_logs/CIFARNDataModule_ResNet/version_0/checkpoints/epoch=9-step=12500.ckpt
+checkpoint_path: null
 synthetic_noise: false
 n_classes: 10
 revision_loss:
@@ -16,16 +16,17 @@ second_step_optimizer_config:
       lr: 5e-7
 trainer:
   _target_: lightning.Trainer
-  max_epochs: 10
+  max_epochs: 100
   accelerator: "gpu"
   devices: "auto"
 # Trainer dedicated to the CP-revision stage so its max_epochs is tuned independently of the base
 # training above. Falls back to `trainer` if omitted (see run_experiment._build_trainer).
 revision_trainer:
   _target_: lightning.Trainer
-  max_epochs: 10
+  max_epochs: 100
   accelerator: "gpu"
   devices: "auto"
+ckpt_strategy: "last"
 logger:
   _target_: lightning.pytorch.loggers.CSVLogger
   save_dir: "lightning_logs"
