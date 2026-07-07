@@ -61,12 +61,12 @@ def run_experiment(cfg: DictConfig):
             }
         else:
             datamodule = instantiate(exp_config["dataset"])
-            experiment_tags |= {"dataset": type(datamodule).__name__}
+            experiment_tags |= {"dataset": type(datamodule).__name__, "noise_type": exp_config["dataset"].get("noise_type", "none")} # only works with CIFAR-N dataset, for other datasets it will be "none"
 
         experiment_name = f"{experiment_tags['dataset']}_{experiment_tags['model']}/"
         if exp_config["cp_revision"]:
             experiment_name = (
-                f"{experiment_tags['dataset']}_{experiment_tags['model']}_cp_revision/k_points_{exp_config['k_points']}/"
+                f"{experiment_tags['dataset']}_{experiment_tags['model']}_cp_revision/{exp_config['cp_score']}/k_points_{exp_config['k_points']}/alpha_{exp_config['alpha']}/"
             )
             experiment_tags |= {
                 "cp_score": exp_config["cp_score"],
@@ -74,6 +74,8 @@ def run_experiment(cfg: DictConfig):
                 "alpha": exp_config["alpha"],
                 "k_points": exp_config["k_points"],
             }
+            if not exp_config["synthetic_noise"]:
+                experiment_name += f"{experiment_tags['noise_type']}/"
 
         # Ugly but necessary to maintain compatibility with previous directory structure of experiments
         if exp_config["synthetic_noise"]:
@@ -169,7 +171,7 @@ def run_experiment(cfg: DictConfig):
                     second_step_optimizer_config,
                 )
                 revision_trainer.fit(revision_model, datamodule)
-                revision_trainer.test(revision_model, datamodule, ckpt_path="best")
+                revision_trainer.test(revision_model, datamodule, ckpt_path=exp_config["ckpt_strategy"])
                 np.save(
                     "final_transition_matrix.npy",
                     revision_model.T_matrix.cpu().numpy(),  # type: ignore
